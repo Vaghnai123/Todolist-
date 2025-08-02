@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskMaster Pro - Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+</head>
+<body class="app-body">
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-left">
+                <h1 class="app-logo">TaskMaster Pro</h1>
+            </div>
+            <div class="header-right">
+                <div class="user-menu">
+                    <button class="user-avatar" id="userMenuBtn">
+                        <span id="userInitials">U</span>
+                    </button>
+                    <div class="dropdown-menu" id="userDropdown">
+                        <a href="#" id="profileBtn">Profile</a>
+                        <a href="#" id="logoutBtn">Logout</a>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="app-main">
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <div class="sidebar-section">
+                    <h3>Tasks</h3>
+                    <ul class="nav-list">
+                        <li><a href="#" class="nav-item active" data-filter="all">All Tasks</a></li>
+                        <li><a href="#" class="nav-item" data-filter="pending">Pending</a></li>
+                        <li><a href="#" class="nav-item" data-filter="completed">Completed</a></li>
+                        <li><a href="#" class="nav-item" data-filter="important">Important</a></li>
+                    </ul>
+                </div>
+                
+                <div class="sidebar-section">
+                    <h3>Categories</h3>
+                    <ul class="category-list" id="categoryList">
+                        <li><span class="category-color" style="background: #3b82f6;"></span>Work</li>
+                        <li><span class="category-color" style="background: #10b981;"></span>Personal</li>
+                        <li><span class="category-color" style="background: #f59e0b;"></span>Shopping</li>
+                    </ul>
+                </div>
+            </aside>
+
+            <!-- Content Area -->
+            <div class="content-area">
+                <!-- Task Input -->
+                <div class="task-input-section">
+                    <form id="taskForm" class="task-form">
+                        <div class="task-input-group">
+                            <input type="text" id="taskInput" placeholder="Add a new task..." required>
+                            <button type="button" id="voiceInputBtn" title="Speak Task" class="btn-icon">🎤</button>
+                            <select id="taskCategory">
+                                <option value="work">Work</option>
+                                <option value="personal">Personal</option>
+                                <option value="shopping">Shopping</option>
+                            </select>
+                            <!-- 🕒 New Deadline Field -->
+                             <input type="datetime-local" id="taskDeadline" name="deadline" required>
+                            <button type="button" id="importantBtn" class="btn-icon" title="Mark as important">
+                                <span class="star">☆</span>
+                            </button>
+                            <button type="submit" class="btn-add">Add Task</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Task Stats -->
+                <div class="task-stats">
+                    <!-- 📊 Task Progress Chart -->
+                     <div class="chart-container">
+                        <h2>Task Progress</h2>
+                        <canvas id="taskChart" width="400" height="400"></canvas>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number" id="totalTasks">0</span>
+                        <span class="stat-label">Total Tasks</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number" id="completedTasks">0</span>
+                        <span class="stat-label">Completed</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number" id="pendingTasks">0</span>
+                        <span class="stat-label">Pending</span>
+                    </div>
+                </div>
+
+                <!-- Task List -->
+                <div class="task-list-section">
+                    <div class="section-header">
+                        <h2 id="sectionTitle">All Tasks</h2>
+                        <div class="task-actions">
+                            <button class="btn-secondary" id="exportCSV">Export CSV</button>
+                            <button class="btn-secondary" id="clearCompleted">Clear Completed</button>
+                        </div>
+                    </div>
+                    
+                    <div class="task-list" id="taskList">
+                        <!-- Tasks will be dynamically added here -->
+                    </div>
+                    
+                    <div class="empty-state" id="emptyState">
+                        <div class="empty-icon">📝</div>
+                        <h3>No tasks yet</h3>
+                        <p>Add your first task to get started!</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Profile Modal -->
+    <div class="modal" id="profileModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Profile Settings</h2>
+                <button class="modal-close" id="closeProfileModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="profileForm">
+                    <div class="form-group">
+                        <label for="profileName">Full Name</label>
+                        <input type="text" id="profileName" name="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="profileEmail">Email Address</label>
+                        <input type="email" id="profileEmail" name="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="profilePhone">Phone Number</label>
+                        <input type="tel" id="profilePhone" name="phone" placeholder="">
+                    </div>
+                    <div class="form-group">
+                        <label for="profileDob">Date of Birth</label>
+                        <input type="date" id="profileDob" name="dob">
+                    </div>
+                    <div class="form-group">
+                        <label for="currentPassword">Current Password</label>
+                        <input type="password" id="currentPassword" name="currentPassword">
+                    </div>
+                    <div class="form-group">
+                        <label for="newPassword">New Password</label>
+                        <input type="password" id="newPassword" name="newPassword">
+                    </div>
+                    <div class="form-group">
+                        <label for="confirmNewPassword">Confirm New Password</label>
+                        <input type="password" id="confirmNewPassword" name="confirmNewPassword">
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" class="btn-secondary" id="cancelProfile">Cancel</button>
+                        <button type="submit" class="btn-primary">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+
+    <!-- Edit Task Modal -->
+<div class="modal" id="editTaskModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Edit Task</h2>
+            <button class="modal-close" id="closeEditModal">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="editTaskForm">
+                <div class="form-group">
+                    <label for="editTaskInput">Task Title</label>
+                    <input type="text" id="editTaskInput" name="title" required>
+                </div>
+                <div class="form-group">
+                    <label for="editCategory">Category</label>
+                    <select id="editCategory" name="category">
+                        <option value="work">Work</option>
+                        <option value="personal">Personal</option>
+                        <option value="shopping">Shopping</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="editDeadline">Deadline</label>
+                    <input type="datetime-local" id="editDeadline" name="deadline" required>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="editImportant"> Mark as Important
+                    </label>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" id="cancelEdit">Cancel</button>
+                    <button type="submit" class="btn-primary">Update Task</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+
